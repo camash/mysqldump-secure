@@ -47,7 +47,8 @@
 #
 LANG=C
 LC_ALL=C
-
+PATH=$PATH:/usr/local/mysql/bin:/usr/local/bin
+export PATH
 
 
 ####################################################################################################
@@ -4515,6 +4516,11 @@ TOTAL_SIZE_B=0
 TOTAL_SIZE_MB=0
 
 #
+# Total size of all out files
+#
+TOTAL_FILE_SIZE_MB=0
+
+#
 # Overall Timing
 #
 TIME_TOTAL_START=0
@@ -4862,8 +4868,12 @@ for db in ${DB_LIST_ALL}; do
 		#
 		else
 			_dump_failed=0
+            _dump_file_size=0
+            
+            _dump_file_size=$(get_file_size "${DUMP_DIR}/${DUMP_FILE_PRE}${db}${ext}" "m")
+            TOTAL_FILE_SIZE_MB=$( sum "${TOTAL_FILE_SIZE_MB}" "${_dump_file_size}" )
 
-			debug_i "ok"    "${duration} sec ($(get_file_size "${DUMP_DIR}/${DUMP_FILE_PRE}${db}${ext}" "m") MB)\n" "${OUT_VERBOSITY}" "${LOG_VERBOSITY}" "${LOG_FILE}"
+			debug_i "ok"    "${duration} sec (${_dump_file_size} MB)\n" "${OUT_VERBOSITY}" "${LOG_VERBOSITY}" "${LOG_FILE}"
 			debug   "trace" "(RUN): ${_cnt} Dump File: ${DUMP_DIR}/${DUMP_FILE_PRE}${db}${ext}"  "${OUT_VERBOSITY}" "${LOG_VERBOSITY}" "${LOG_FILE}"
 
 			if ! MY_WARNINGS="$(mysqldump_pipefail_warnings "${error_statuses}")"; then
@@ -5097,6 +5107,7 @@ fi
 debug "debug" "(RUN): Dumping finished (OK: ${DB_CNT_DUMPED} dbs, IGN: ${DB_CNT_IGNORED} dbs, ERR: ${DB_CNT_FAILED}, TOTAL: ${DB_CNT_TOTAL})" "${OUT_VERBOSITY}" "${LOG_VERBOSITY}" "${LOG_FILE}"
 debug "debug" "(RUN): Took ${TIME_TOTAL_DURATION} seconds" "${OUT_VERBOSITY}" "${LOG_VERBOSITY}" "${LOG_FILE}"
 debug "debug" "(RUN): Total size dumped: ${TOTAL_SIZE_MB} MB" "${OUT_VERBOSITY}" "${LOG_VERBOSITY}" "${LOG_FILE}"
+debug "debug" "(RUN): Total file size: ${TOTAL_FILE_SIZE_MB} MB" "${OUT_VERBOSITY}" "${LOG_VERBOSITY}" "${LOG_FILE}"
 
 
 
